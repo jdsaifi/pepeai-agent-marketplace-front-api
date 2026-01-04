@@ -1,0 +1,10 @@
+node_modules
+dist
+.next
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+uploads
+APIClient
