@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { sendError } from '../lib/apiResponse';
 import Helpers from '../lib/helpers';
 import { authService } from '../modules/auth/service';
+import { ddl } from '../lib/dd';
 
 export interface AuthRequest extends Request {
     user?: {
@@ -21,7 +22,7 @@ export const authenticate = async (
         // allow auth token from cookie or header
         const token =
             req.cookies.authToken || req.headers.authorization?.split(' ')[1];
-
+        ddl('token: ', token);
         if (!token) {
             return sendError(
                 req,

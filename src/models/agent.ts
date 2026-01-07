@@ -1,4 +1,4 @@
-import mongoose, { Schema, model } from 'mongoose';
+import { Schema, model } from 'mongoose';
 import { IAgentDocument } from '../types/agent';
 import Helpers from '../lib/helpers';
 import { ddl } from '../lib/dd';
@@ -6,7 +6,7 @@ import { ddl } from '../lib/dd';
 const agentSchema = new Schema<IAgentDocument>(
     {
         name: { type: String, required: true },
-        slug: { type: String, required: true, unique: true },
+        slug: { type: String, required: true },
         description: { type: String, required: true },
         category: {
             type: String,

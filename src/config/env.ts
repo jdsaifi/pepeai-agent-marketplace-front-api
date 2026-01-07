@@ -9,7 +9,7 @@ const envSchema = z.object({
     NODE_ENV: z
         .enum(['development', 'production', 'test'])
         .default('development'),
-    CORS_ORIGIN: z.string().default('http://localhost:3000'),
+    CORS_ORIGIN: z.string().default('http://localhost:5173'),
     JWT_SECRET: z
         .string()
         .default('QcclwvZw7hKXCOTouIYOlZt8cHOhyj881iLwZ0zX98A='),
@@ -29,6 +29,26 @@ const envSchema = z.object({
     AWS_S3_REGION: z.string().default('us-east-1'),
     AWS_S3_ACCESS_KEY_ID: z.string().default(''),
     AWS_S3_SECRET_ACCESS_KEY: z.string().default(''),
+
+    EMBEDDING_PROVIDER: z.string().default('ollama'),
+    OLLAMA_BASE_URL: z.string().default('http://localhost:11434'),
+    OLLAMA_EMBEDDING_MODEL: z.string().default('nomic-embed-text'),
+    OLLAMA_LLM_MODEL: z.string().default('llama3.2'),
+
+    OPENAI_API_KEY: z.string().default(''),
+    OPENAI_LLM_MODEL: z.string().default('gpt-4o-mini'),
+    OPENAI_BASE_URL: z.string().default('https://api.openai.com/v1'),
+
+    OPENAI_EMBEDDING_MODEL: z.string().default('text-embedding-3-small'),
+
+    QDRANT_URL: z.string().default('http://localhost:6333'),
+    QDRANT_API_KEY: z.string().default(''),
+
+    ANTHROPIC_API_KEY: z.string().default(''),
+    ANTHROPIC_LLM_MODEL: z.string().default('claude-sonnet-4-20250514'),
+
+    GOOGLE_GEMINI_API_KEY: z.string().default(''),
+    GOOGLE_GEMINI_LLM_MODEL: z.string().default('gemini-1.5-flash'),
 });
 
 const env = envSchema.parse(process.env);

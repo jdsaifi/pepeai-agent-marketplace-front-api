@@ -15,6 +15,7 @@ export interface IChunkMetadata {
 export interface IChunk {
     knowledgeBaseId: Types.ObjectId;
     agentId: Types.ObjectId;
+    qdrantId: string;
     chunkIndex: number;
     content: string;
     charCount: number;

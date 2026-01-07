@@ -1,5 +1,6 @@
 // models/Chunk.ts
 import { Schema, model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import { IChunkDocument } from '../types/chunk';
 
 const chunkSchema = new Schema<IChunkDocument>(
@@ -14,6 +15,13 @@ const chunkSchema = new Schema<IChunkDocument>(
             type: Schema.Types.ObjectId,
             ref: 'Agent',
             required: true,
+            index: true,
+        },
+        qdrantId: {
+            type: String,
+            required: true,
+            unique: true,
+            default: () => uuidv4(),
             index: true,
         },
         chunkIndex: {
