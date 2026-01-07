@@ -16,6 +16,7 @@ import {
 // import { createKnowledgeBaseSchema } from './schema';
 
 const router = Router();
+router.use(authenticate);
 
 // validate(createKnowledgeBaseSchema)
 // router.post(
@@ -28,28 +29,28 @@ const router = Router();
 // Upload document route
 router.post(
     '/agents/:agentId/kbs',
-    [authenticate, uploadDocument],
+    uploadDocument,
     asyncHandler(knowledgeBaseController.uploadDocument)
 );
 
 // Get all knowledge bases for agent
 router.get(
     '/agents/:agentId/kbs',
-    [authenticate, validate(getAllKBSchema)],
+    validate(getAllKBSchema),
     asyncHandler(knowledgeBaseController.getAllKB)
 );
 
 // Get single knowledge base
 router.get(
     '/agents/:agentId/kbs/:kbId',
-    [authenticate, validate(getOneKBSchema)],
+    validate(getOneKBSchema),
     asyncHandler(knowledgeBaseController.getOne)
 );
 
 // Get document content
 router.get(
     '/agents/:agentId/kbs/:kbId/content',
-    [authenticate, validate(getContentSchema)],
+    validate(getContentSchema),
     asyncHandler(knowledgeBaseController.getContent)
 );
 
@@ -62,14 +63,14 @@ router.get(
 // Chunk document
 router.post(
     '/agents/:agentId/kbs/:kbId/chunk',
-    [authenticate, validate(chunkDocumentSchema)],
+    validate(chunkDocumentSchema),
     asyncHandler(knowledgeBaseController.chunkDocument)
 );
 
 // // Get chunks
 router.get(
     '/agents/:agentId/kbs/:kbId/chunks',
-    [authenticate, validate(getChunksSchema)],
+    validate(getChunksSchema),
     asyncHandler(knowledgeBaseController.getChunks)
 );
 
@@ -82,7 +83,7 @@ router.get(
 // Get agent chunk stats
 router.get(
     '/agents/:agentId/kbs/chunks/stats',
-    [authenticate, validate(getChunkStatsSchema)],
+    validate(getChunkStatsSchema),
     asyncHandler(knowledgeBaseController.getChunkStats)
 );
 

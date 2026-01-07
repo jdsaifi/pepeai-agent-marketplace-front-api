@@ -12,6 +12,9 @@ const router = Router();
 // list of agents route
 router.get('/', [authenticate], asyncHandler(agentController.listAgents));
 
+// list of public agents route
+router.get('/public', asyncHandler(agentController.listPublicAgents));
+
 // Create agent route
 router.post(
     '/',

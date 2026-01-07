@@ -27,6 +27,24 @@ class AgentController {
         return sendSuccess(req, res, agents, 200);
     }
 
+    // list public agents
+    async listPublicAgents(req: Request, res: Response) {
+        ddl('route: GET /api/v1/agents/public');
+        const agents = await agentService.getAll(
+            {
+                visibility: 'public',
+            },
+            {
+                select: 'name slug description category avatar themeColor tags createdBy',
+                populate: {
+                    path: 'createdBy',
+                    select: 'name email',
+                },
+            }
+        );
+        return sendSuccess(req, res, agents, 200);
+    }
+
     // Create agent
     async createAgent(req: AuthRequest, res: Response) {
         ddl('route: POST /api/v1/agent');

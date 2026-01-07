@@ -9,6 +9,14 @@ class AgentService extends BaseService {
         super(AgentModel);
     }
 
+    async getOne(agentId: string) {
+        const agent = await this.model.findById(agentId);
+        if (!agent) {
+            throw new APIError({ code: 404, message: 'Agent not found' });
+        }
+        return agent;
+    }
+
     async getAgentBySlug(slug: string) {
         const agent = (await this.get({ slug })).populate(
             'createdBy',
