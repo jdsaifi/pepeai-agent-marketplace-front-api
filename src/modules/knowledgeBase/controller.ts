@@ -27,7 +27,7 @@ class KnowledgeBaseController {
             );
         }
 
-        const knowledgeBase = await knowledgeBaseService.createFromFile({
+        const result = await knowledgeBaseService.createByFileUpload({
             agentId,
             userId,
             file: req.file,
@@ -35,15 +35,57 @@ class KnowledgeBaseController {
             description,
         });
 
-        // const { name, description, sourceType, sourceUrl } = req.body;
-        // const input: CreateKnowledgeBaseInput = {
-        //     ...req.body,
-        // };
-        // ddl('input ->', input);
-        // const knowledgeBase = await knowledgeBaseService.createKnowledgeBase(input);
-        // ddl('knowledgeBase ->', knowledgeBase);
-        return sendSuccess(req, res, knowledgeBase, 201);
+        // todo: publish message to rabbitmq about new document upload
+
+        return sendSuccess(req, res, result, 201);
     }
+
+    /**
+     * Get processing status
+     * GET /api/agents/:agentId/knowledge-base/:kbId/status
+     */
+    async getStatus(req: AuthRequest, res: Response) {
+        const { kbId } = req.params;
+        const userId = req.user!._id as string;
+
+        const { knowledgeBase, jobs } =
+            await knowledgeBaseService.getProcessingStatus(kbId, userId);
+
+        if (!knowledgeBase) {
+            return res.status(404).json({
+                success: false,
+                message: 'Knowledge base not found',
+            });
+        }
+
+        const data = {
+            knowledgeBase: {
+                id: knowledgeBase._id,
+                name: knowledgeBase.name,
+                status: knowledgeBase.processing.status,
+                progress: knowledgeBase.processing.progress,
+                error: knowledgeBase.processing.error,
+            },
+            jobs: jobs.map((job) => ({
+                jobId: job.jobId,
+                type: job.type,
+                status: job.status,
+                progress: job.progress,
+                attempt: job.attempt,
+                error: job.error,
+                createdAt: job.createdAt,
+                completedAt: job.completedAt,
+                processingTime: job.processingTime,
+            })),
+        };
+
+        return sendSuccess(req, res, data, 200);
+    }
+
+    ///////////////////////////////
+    //////////////////////////////
+    ////////////////////////////
+    ////////////////////////
 
     async getAllKB(req: AuthRequest, res: Response) {
         ddl('route: GET /api/v1/agents/:agentId/kbs');

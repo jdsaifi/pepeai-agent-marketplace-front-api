@@ -147,6 +147,11 @@ const agentSchema = new Schema<IAgentDocument>(
             lastProcessedAt: Date,
         },
 
+        followersCount: {
+            type: Number,
+            default: 0,
+        },
+
         publishedAt: { type: Date, default: null },
         publishedBy: {
             type: Schema.Types.ObjectId,

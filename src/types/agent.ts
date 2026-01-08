@@ -58,6 +58,7 @@ export interface IAgent {
         totalChunks: number;
         lastProcessedAt: Date | null;
     };
+    followersCount: number;
     createdBy: string | IUser;
     publishedAt: Date | null;
     publishedBy: IUser | null;

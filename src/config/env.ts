@@ -23,6 +23,8 @@ const envSchema = z.object({
 
     ENABLE_LOGS: z.string().default('true'),
 
+    RABBITMQ_URL: z.string().default('amqp://127.0.0.1:5672'),
+
     STORAGE_PROVIDER: z.string().default('local'),
     LOCAL_UPLOAD_DIR: z.string().default(path.join(process.cwd(), 'uploads')),
     AWS_S3_BUCKET: z.string().default(''),

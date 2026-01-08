@@ -33,6 +33,17 @@ router.post(
     asyncHandler(knowledgeBaseController.uploadDocument)
 );
 
+// get kb status
+router.get(
+    '/agents/:agentId/kbs/:kbId/status',
+    [authenticate],
+    asyncHandler(knowledgeBaseController.getStatus)
+);
+
+////////////////////////////////
+////////////////////////////////
+///////////////////////////////
+
 // Get all knowledge bases for agent
 router.get(
     '/agents/:agentId/kbs',

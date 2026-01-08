@@ -35,7 +35,7 @@ class AgentController {
                 visibility: 'public',
             },
             {
-                select: 'name slug description category avatar themeColor tags createdBy',
+                select: 'name slug description category avatar themeColor tags followersCount usage.totalMessages createdBy',
                 populate: {
                     path: 'createdBy',
                     select: 'name email',

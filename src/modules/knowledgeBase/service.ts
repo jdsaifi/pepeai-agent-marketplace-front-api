@@ -14,6 +14,8 @@ import { APIError } from '../../lib/APIError';
 import { ddl } from '../../lib/dd';
 import { chunkingService } from '../../lib/chunking/chunkingService';
 import { IChunkingOptions, IChunkingResult } from '../../types/chunk';
+import { queueProducer } from '../../lib/queue/producer';
+import { JobModel } from '../../models/job';
 
 export interface ICreateKBFromFileParams {
     agentId: string;
@@ -40,6 +42,100 @@ export interface ICreateKBFromTextParams {
 }
 
 class KnowledgeBaseService {
+    /**
+     * upload kb/document file
+     */
+    async createByFileUpload(params: ICreateKBFromFileParams): Promise<{
+        knowledgeBase: IKnowledgeBaseDocument;
+        jobId: string;
+    }> {
+        const { agentId, userId, file, name, description } = params;
+
+        // Validate agent exists and user has access
+        const agent = await AgentModel.findOne({
+            _id: agentId,
+            createdBy: userId,
+        });
+
+        if (!agent) {
+            throw new APIError({
+                code: 404,
+                message: 'Agent not found or access denied',
+                errorCode: 'AGENT_NOT_FOUND_OR_ACCESS_DENIED',
+            });
+        }
+
+        // Determine source type from mime type
+        const sourceType = this.getSourceTypeFromMime(file.mimetype);
+
+        try {
+            // Upload file to storage
+            // await this.updateStatus(knowledgeBase._id, 'uploading', 10);
+
+            const storageResult = await storageService.upload(
+                file,
+                `agents/${agentId}/kb`
+            );
+
+            // Check for duplicate
+            const duplicate = await this.findDuplicateByChecksumForFile(
+                agentId,
+                storageResult.checksum
+            );
+
+            if (duplicate) {
+                // Clean up and throw
+                await storageService.delete(storageResult.storageKey);
+                throw new APIError({
+                    code: 400,
+                    message: `Duplicate file detected: "${duplicate.name}"`,
+                    errorCode: 'DUPLICATE_FILE_DETECTED',
+                });
+            }
+
+            // Create KB record with queued status
+            const knowledgeBase = await KnowledgeBaseModel.create({
+                agentId: new Types.ObjectId(agentId),
+                sourceType,
+                name: name || file.originalname,
+                description,
+                file: {
+                    originalName: file.originalname,
+                    mimeType: file.mimetype,
+                    size: file.size,
+                    storageKey: storageResult.storageKey,
+                    storageUrl: storageResult.storageUrl,
+                    checksum: storageResult.checksum,
+                },
+                processing: {
+                    status: 'pending',
+                    progress: 0,
+                },
+                createdBy: new Types.ObjectId(userId),
+            });
+
+            // Queue for file upload
+            const jobId = await queueProducer.queueFileUpload({
+                knowledgeBaseId: knowledgeBase._id.toString(),
+                agentId,
+                userId,
+                file: {
+                    storageKey: storageResult.storageKey,
+                    originalName: file.originalname,
+                    mimeType: file.mimetype,
+                    size: file.size,
+                },
+            });
+
+            return {
+                knowledgeBase,
+                jobId,
+            };
+        } catch (error: any) {
+            throw error;
+        }
+    }
+
     /**
      * Create knowledge base from uploaded file
      */
@@ -356,6 +452,20 @@ class KnowledgeBaseService {
     }
 
     /**
+     * Find duplicate by checksum for file
+     */
+    private async findDuplicateByChecksumForFile(
+        agentId: string,
+        checksum: string
+    ): Promise<IKnowledgeBaseDocument | null> {
+        return KnowledgeBaseModel.findOne({
+            agentId: new Types.ObjectId(agentId),
+            'file.checksum': checksum,
+            isActive: true,
+        });
+    }
+
+    /**
      * Update agent's KB statistics
      */
     private async updateAgentKBStats(agentId: string): Promise<void> {
@@ -545,6 +655,32 @@ class KnowledgeBaseService {
         await this.updateAgentKBStats(kb.agentId.toString());
 
         return result;
+    }
+
+    /**
+     * Get processing status for a knowledge base
+     */
+    async getProcessingStatus(
+        kbId: string,
+        userId: string
+    ): Promise<{
+        knowledgeBase: IKnowledgeBaseDocument | null;
+        jobs: any[];
+    }> {
+        const kb = await this.getById(kbId, userId);
+
+        if (!kb) {
+            return { knowledgeBase: null, jobs: [] };
+        }
+
+        const jobs = await JobModel.find({
+            knowledgeBaseId: new Types.ObjectId(kbId),
+        }).sort({ createdAt: -1 });
+
+        return {
+            knowledgeBase: kb,
+            jobs,
+        };
     }
 }
 

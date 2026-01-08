@@ -12,6 +12,7 @@
     "author": "jD Saifi (jdsaifi729@gmail.com)",
     "license": "ISC",
     "devDependencies": {
+        "@types/amqplib": "^0.10.8",
         "@types/compression": "^1.8.1",
         "@types/cookie-parser": "^1.4.10",
         "@types/cors": "^2.8.19",
@@ -27,6 +28,7 @@
     },
     "dependencies": {
         "@types/jsonwebtoken": "^9.0.10",
+        "amqplib": "^0.10.9",
         "bcryptjs": "^3.0.3",
         "compression": "^1.8.1",
         "cookie-parser": "^1.4.7",
